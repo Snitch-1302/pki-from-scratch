@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- PKI lab: never commit key material or CA state ---
+*.key
+*.pem
+private/
+serial
+serial.old
+crlnumber
+crlnumber.old
+index.txt
+index.txt.old
+index.txt.attr
+index.txt.attr.old
+*.csr
+*.srl
