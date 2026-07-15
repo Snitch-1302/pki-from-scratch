@@ -2,25 +2,25 @@
 default_ca = CA_default
 
 [ CA_default ]
-dir               = ./rootca
+dir               = .
 certs             = $dir/certs
 new_certs_dir     = $dir/newcerts
 database          = $dir/index.txt
 serial            = $dir/serial
 crlnumber         = $dir/crlnumber
-crl               = $dir/crl/root-ca.crl
-private_key       = $dir/private/root-ca.key
-certificate       = $dir/root-ca.crt
+crl               = $dir/crl/intermediate-ca.crl
+private_key       = $dir/private/intermediate-ca.key
+certificate       = $dir/intermediate-ca.crt
 
 default_md        = sha256
-default_days      = 3650
+default_days      = 1825
 default_crl_days  = 30
-policy            = policy_strict
+policy            = policy_loose
 
-[ policy_strict ]
-countryName            = match
-stateOrProvinceName    = match
-organizationName       = match
+[ policy_loose ]
+countryName            = optional
+stateOrProvinceName    = optional
+organizationName       = optional
 organizationalUnitName = optional
 commonName             = supplied
 emailAddress           = optional
@@ -29,23 +29,24 @@ emailAddress           = optional
 default_bits       = 4096
 default_md         = sha256
 distinguished_name = req_distinguished_name
-x509_extensions    = v3_ca
+x509_extensions    = v3_intermediate_ca
 prompt             = no
 
 [ req_distinguished_name ]
 countryName            = US
 stateOrProvinceName    = California
 organizationName       = Learning Lab
-commonName             = PKI Lab Root CA
-
-[ v3_ca ]
-basicConstraints       = critical, CA:true
-keyUsage               = critical, keyCertSign, cRLSign
-subjectKeyIdentifier   = hash
-authorityKeyIdentifier = keyid:always,issuer
+commonName             = PKI Lab Intermediate CA
 
 [ v3_intermediate_ca ]
 basicConstraints       = critical, CA:true, pathlen:0
 keyUsage               = critical, keyCertSign, cRLSign
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always,issuer
+
+[ server_cert ]
+basicConstraints       = CA:FALSE
+keyUsage               = critical, digitalSignature, keyEncipherment
+extendedKeyUsage       = serverAuth
 subjectKeyIdentifier   = hash
 authorityKeyIdentifier = keyid:always,issuer
