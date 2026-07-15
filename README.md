@@ -86,7 +86,32 @@ openssl x509 -in root-ca.crt -text -noout
 
 ### 2. Intermediate CA
 
-*(instructions added once Phase 2 is complete)*
+```bash
+openssl genrsa -aes256 -out intermediateca/private/intermediate-ca.key 4096
+
+openssl req -new -key intermediateca/private/intermediate-ca.key \
+  -out intermediateca/intermediate-ca.csr -config intermediateca/openssl.cnf
+
+openssl ca -config rootca/openssl.cnf -extensions v3_intermediate_ca \
+  -days 1825 -notext -md sha256 \
+  -in intermediateca/intermediate-ca.csr -out intermediateca/intermediate-ca.crt
+```
+
+Build the chain file (most specific first, root last):
+
+```bash
+cat intermediateca/intermediate-ca.crt rootca/root-ca.crt > intermediateca/ca-chain.crt
+```
+
+Verify:
+
+```bash
+openssl x509 -in intermediateca/intermediate-ca.crt -text -noout
+```
+
+Confirm the Intermediate's `Authority Key Identifier` matches the Root's
+`Subject Key Identifier`, and `Basic Constraints` shows `CA:TRUE,
+pathlen:0` (can sign end-entity certs, cannot create further sub-CAs).
 
 ### 3. Issue an end-entity certificate
 
@@ -108,7 +133,7 @@ openssl x509 -in root-ca.crt -text -noout
 
 - [x] Phase 0 — CA directory structure & bookkeeping
 - [x] Phase 1 — Root CA
-- [ ] Phase 2 — Intermediate CA
+- [x] Phase 2 — Intermediate CA
 - [ ] Phase 3 — End-entity certificate issuance
 - [ ] Phase 4 — Chain verification
 - [ ] Phase 5 — Revocation
@@ -116,4 +141,4 @@ openssl x509 -in root-ca.crt -text -noout
 
 ## License
 
-MIT
+MIT (or your preferred choice)
