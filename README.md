@@ -116,4 +116,4 @@ openssl x509 -in root-ca.crt -text -noout
 
 ## License
 
-MIT (or your preferred choice)
+MIT
