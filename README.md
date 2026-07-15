@@ -115,11 +115,48 @@ pathlen:0` (can sign end-entity certs, cannot create further sub-CAs).
 
 ### 3. Issue an end-entity certificate
 
-*(instructions added once Phase 3 is complete)*
+```bash
+openssl genrsa -out intermediateca/private/server.key 2048
+
+MSYS_NO_PATHCONV=1 openssl req -new -key intermediateca/private/server.key \
+  -out intermediateca/server.csr \
+  -subj "/C=US/ST=California/O=Learning Lab/CN=server.pkilab.local" \
+  -addext "subjectAltName=DNS:server.pkilab.local"
+
+openssl ca -config intermediateca/openssl.cnf -extensions server_cert \
+  -days 365 -notext -md sha256 \
+  -in intermediateca/server.csr -out intermediateca/server.crt
+```
+
+Verify:
+
+```bash
+openssl x509 -in intermediateca/server.crt -text -noout
+```
+
+Confirm `Basic Constraints: CA:FALSE`, `Extended Key Usage: TLS Web Server
+Authentication`, and `Subject Alternative Name: DNS:server.pkilab.local`
+are all present, and that the Authority Key Identifier matches the
+Intermediate's own Subject Key Identifier.
+
+> Note: server keys are generated **without** `-aes256` — unlike CA keys,
+> a server process needs to read its key automatically on startup with no
+> human present to enter a passphrase. In production this gap is closed
+> with strict filesystem permissions or a secrets manager, not left open.
 
 ### 4. Verify the chain
 
-*(instructions added once Phase 4 is complete)*
+```bash
+openssl verify -CAfile rootca/root-ca.crt \
+  -untrusted intermediateca/intermediate-ca.crt intermediateca/server.crt
+```
+
+Expected output: `intermediateca/server.crt: OK`
+
+Only `rootca/root-ca.crt` is passed as explicitly trusted (`-CAfile`) —
+modeling a root baked into an OS/browser trust store. The intermediate is
+supplied as `-untrusted`, a helper to complete the chain, not inherently
+trusted itself; OpenSSL still verifies it chains back to the trusted root.
 
 ### 5. Revoke a certificate
 
@@ -134,8 +171,8 @@ pathlen:0` (can sign end-entity certs, cannot create further sub-CAs).
 - [x] Phase 0 — CA directory structure & bookkeeping
 - [x] Phase 1 — Root CA
 - [x] Phase 2 — Intermediate CA
-- [ ] Phase 3 — End-entity certificate issuance
-- [ ] Phase 4 — Chain verification
+- [x] Phase 3 — End-entity certificate issuance
+- [x] Phase 4 — Chain verification
 - [ ] Phase 5 — Revocation
 - [ ] Phase 6 — CRL generation
 
