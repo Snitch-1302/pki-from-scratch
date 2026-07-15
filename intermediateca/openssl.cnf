@@ -2,7 +2,7 @@
 default_ca = CA_default
 
 [ CA_default ]
-dir               = .
+dir               = ./intermediateca
 certs             = $dir/certs
 new_certs_dir     = $dir/newcerts
 database          = $dir/index.txt
@@ -16,6 +16,8 @@ default_md        = sha256
 default_days      = 1825
 default_crl_days  = 30
 policy            = policy_loose
+
+copy_extensions = copy
 
 [ policy_loose ]
 countryName            = optional
