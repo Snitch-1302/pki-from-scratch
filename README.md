@@ -160,11 +160,43 @@ trusted itself; OpenSSL still verifies it chains back to the trusted root.
 
 ### 5. Revoke a certificate
 
-*(instructions added once Phase 5 is complete)*
+```bash
+openssl ca -config intermediateca/openssl.cnf -revoke intermediateca/server.crt
+```
+
+Only the CA that issued a certificate can revoke it — this updates that
+CA's own `index.txt`, flipping the entry's status from `V` to `R` and
+recording a revocation timestamp.
 
 ### 6. Generate a CRL
 
-*(instructions added once Phase 6 is complete)*
+```bash
+openssl ca -config intermediateca/openssl.cnf -gencrl \
+  -out intermediateca/crl/intermediate-ca.crl
+```
+
+Inspect it:
+
+```bash
+openssl crl -in intermediateca/crl/intermediate-ca.crl -text -noout
+```
+
+Confirm the revoked serial appears under `Revoked Certificates`, and note
+the `Next Update` field — a CRL has its own expiry and is expected to be
+periodically republished.
+
+**Verify revocation is actually enforced** — note that `openssl verify`
+does *not* check revocation status unless explicitly told to:
+
+```bash
+openssl verify -CAfile rootca/root-ca.crt -untrusted intermediateca/intermediate-ca.crt \
+  -CRLfile intermediateca/crl/intermediate-ca.crl -crl_check intermediateca/server.crt
+```
+
+Expected output: `error 23 at 0 depth lookup: certificate revoked`
+
+`-crl_check` is required to enable revocation checking at all — supplying
+a CRL via `-CRLfile` alone is silently ignored without it.
 
 ## Status
 
@@ -173,8 +205,8 @@ trusted itself; OpenSSL still verifies it chains back to the trusted root.
 - [x] Phase 2 — Intermediate CA
 - [x] Phase 3 — End-entity certificate issuance
 - [x] Phase 4 — Chain verification
-- [ ] Phase 5 — Revocation
-- [ ] Phase 6 — CRL generation
+- [x] Phase 5 — Revocation
+- [x] Phase 6 — CRL generation
 
 ## License
 
