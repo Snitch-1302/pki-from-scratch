@@ -5,7 +5,7 @@ Intermediate CA → end-entity certificate issuance → revocation → CRL
 generation.
 
 Read the story behind this project (motivation, design decisions, lessons
-learned) here: **[Hashnode article link]**
+learned) here: https://quietbytes.hashnode.dev/series/pki-from-scratch
 
 ---
 
@@ -24,9 +24,9 @@ Root CA (offline trust anchor, self-signed)
 
 ## Tech stack
 
-- **OpenSSL** — CA operations, key generation, signing, revocation, CRLs
-- **Python 3.x** — orchestration of OpenSSL calls via `subprocess`
-- **Git Bash** (Windows) — shell environment
+- **OpenSSL** - CA operations, key generation, signing, revocation, CRLs
+- **Python 3.x** - orchestration of OpenSSL calls via `subprocess`
+- **Git Bash** (Windows) - shell environment
 
 ## Project structure
 
@@ -51,14 +51,14 @@ pki-from-scratch/
 > Private keys and CA ledger state (`index.txt`, `serial`, `crlnumber`) are
 > excluded via `.gitignore`. Only public certs and configs are tracked.
 > All Subject DNs used throughout are placeholders (e.g. `Learning Lab`,
-> `PKI Lab Root CA`) — no real personal or organizational data.
+> `PKI Lab Root CA`) - no real personal or organizational data.
 
 ## Prerequisites
 
 - OpenSSL (v1.1.1+ or v3.x)
 - Python 3.8+
 - Git Bash or any POSIX-compatible shell (Windows users: avoid PowerShell
-  for the setup commands below — brace expansion syntax differs)
+  for the setup commands below - brace expansion syntax differs)
 
 ## Setup
 
@@ -139,7 +139,7 @@ Authentication`, and `Subject Alternative Name: DNS:server.pkilab.local`
 are all present, and that the Authority Key Identifier matches the
 Intermediate's own Subject Key Identifier.
 
-> Note: server keys are generated **without** `-aes256` — unlike CA keys,
+> Note: server keys are generated **without** `-aes256` - unlike CA keys,
 > a server process needs to read its key automatically on startup with no
 > human present to enter a passphrase. In production this gap is closed
 > with strict filesystem permissions or a secrets manager, not left open.
@@ -153,7 +153,7 @@ openssl verify -CAfile rootca/root-ca.crt \
 
 Expected output: `intermediateca/server.crt: OK`
 
-Only `rootca/root-ca.crt` is passed as explicitly trusted (`-CAfile`) —
+Only `rootca/root-ca.crt` is passed as explicitly trusted (`-CAfile`) -
 modeling a root baked into an OS/browser trust store. The intermediate is
 supplied as `-untrusted`, a helper to complete the chain, not inherently
 trusted itself; OpenSSL still verifies it chains back to the trusted root.
@@ -164,7 +164,7 @@ trusted itself; OpenSSL still verifies it chains back to the trusted root.
 openssl ca -config intermediateca/openssl.cnf -revoke intermediateca/server.crt
 ```
 
-Only the CA that issued a certificate can revoke it — this updates that
+Only the CA that issued a certificate can revoke it - this updates that
 CA's own `index.txt`, flipping the entry's status from `V` to `R` and
 recording a revocation timestamp.
 
@@ -182,10 +182,10 @@ openssl crl -in intermediateca/crl/intermediate-ca.crl -text -noout
 ```
 
 Confirm the revoked serial appears under `Revoked Certificates`, and note
-the `Next Update` field — a CRL has its own expiry and is expected to be
+the `Next Update` field - a CRL has its own expiry and is expected to be
 periodically republished.
 
-**Verify revocation is actually enforced** — note that `openssl verify`
+**Verify revocation is actually enforced** - note that `openssl verify`
 does *not* check revocation status unless explicitly told to:
 
 ```bash
@@ -195,18 +195,18 @@ openssl verify -CAfile rootca/root-ca.crt -untrusted intermediateca/intermediate
 
 Expected output: `error 23 at 0 depth lookup: certificate revoked`
 
-`-crl_check` is required to enable revocation checking at all — supplying
+`-crl_check` is required to enable revocation checking at all - supplying
 a CRL via `-CRLfile` alone is silently ignored without it.
 
 ## Status
 
-- [x] Phase 0 — CA directory structure & bookkeeping
-- [x] Phase 1 — Root CA
-- [x] Phase 2 — Intermediate CA
-- [x] Phase 3 — End-entity certificate issuance
-- [x] Phase 4 — Chain verification
-- [x] Phase 5 — Revocation
-- [x] Phase 6 — CRL generation
+- [x] Phase 0 - CA directory structure & bookkeeping
+- [x] Phase 1 - Root CA
+- [x] Phase 2 - Intermediate CA
+- [x] Phase 3 - End-entity certificate issuance
+- [x] Phase 4 - Chain verification
+- [x] Phase 5 - Revocation
+- [x] Phase 6 - CRL generation
 
 ## License
 
